@@ -1,12 +1,16 @@
 # Sustainabytes Data Analysis
 
+This repository contains the documentation and code used in the data analysis of our CS132 Project: Sustainabytes.
+
+We also have a [dedicated website](https://prebollido.github.io/sustainabytes/).
+
 ## Raw Data Features
 
 ### Food Prices Dataset
 
 #### 1. Base Food Columns
 
-There are 73 base food columns. These columns represent the actual measured prices for each food item.
+There are 73 base food columns representing the price for each food item. Base values represent the actual survey data collected at specific market and times.
 
 ```python
 ['apples', 'bananas', 'beans', 'bread', 'bulgur', 'cabbage', 'carrots', 'cassava', 'cassava_flour', 'cassava_meal', 'cheese', 'chickpeas', 'chili', 'coffee_instant', 'couscous', 'cowpeas', 'cucumbers', 'dates', 'eggplants', 'eggs', 'fish', 'fish_catfish', 'fish_mackerel', 'fish_sardine_canned', 'fish_tilapia', 'fish_tuna_canned', 'fonio', 'garlic', 'groundnuts', 'lentils', 'livestock_sheep_two_year_old_male', 'livestockgoat_castrated_male', 'livestocksheep_castrated_male', 'maize', 'maize_flour', 'maize_meal', 'meat_beef', 'meat_beef_chops', 'meat_beef_minced', 'meat_buffalo', 'meat_chicken', 'meat_chicken_broiler', 'meat_chicken_plucked', 'meat_chicken_whole', 'meat_goat', 'meat_lamb', 'meat_pork', 'milk', 'millet', 'oil', 'onions', 'oranges', 'parsley', 'pasta', 'peas', 'potatoes', 'pulses', 'rice', 'rice_various', 'salt', 'sesame', 'sorghum', 'sorghum_food_aid', 'spinach', 'sugar', 'tea', 'tomatoes', 'tomatoes_paste', 'watermelons', 'wheat', 'wheat_flour', 'yam', 'yogurt']
@@ -14,16 +18,16 @@ There are 73 base food columns. These columns represent the actual measured pric
 
 #### 2. Derived Food Columns
 
-For each base food item, there are derived metrics.
+For each base food item, there are derived metric columns. Derived values are aggregated/interpolated values from multiple raw observations.
 
-- `o_[food_item]` (open estimate) — monthly opening price estimate for the food item; represents the initial market price at the start of each month
-- `h_[food_item]` (high estimate) — monthly high price estimate for the commodity apples; represents the initial market price at the start of each month
-- `l_[food_item]` (low estimate)  — monthly opening price estimate for the commodity apples; represents the initial market price at the start of each month
-- `c_[food_item]` (close estimate) — monthly opening price estimate for the commodity apples; represents the initial market price at the start of each month
-- `inflation_[food_item]` (close estimate) — monthly opening price estimate for the commodity apples; represents the initial market price at the start of each month
-- `trust_[food_item]` (close estimate) — monthly opening price estimate for the commodity apples; represents the initial market price at the start of each month
+- `o_[food_item]` **monthly opening price estimate**: represents the initial market price at the start of each month
+- `h_[food_item]` **monthly highest price achieved**: captures market peaks, reflecting the maximum demand or valuation during the period
+- `l_[food_item]` **monthly lowest price point**: essential for understanding market dips, buyer interest at lower prices, and the floor value of the commodity
+- `c_[food_item]` **monthly closing price estimate**: reflectis the closing market sentiment and valuation after a month's trading activity
+- `inflation_[food_item]` **12-month inflation rate**: (also called price change rate) calculated by comparing the current price against the price from 12 months prior, giving an annualized percentage change.
+- `trust_[food_item]` **trust score**: ranging from 1-10, reflects the reliability of the inflation calculation for maize; these are specific to each market, time period, and commodity, considering the data availability and accuracy for the preceding 12 months.
 
-There are also indexes for each derived metric:
+There are also indexes for each derived metric. An index is the aggregate value for all food items under the respective metric.
 
 - `o_food_price_index`
 - `h_food_price_index`
