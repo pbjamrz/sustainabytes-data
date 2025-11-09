@@ -4,30 +4,76 @@ This repository contains the documentation and code used in the data analysis of
 
 We also have a [dedicated website](https://prebollido.github.io/sustainabytes/).
 
-## Raw Data Features
+## Features: Raw Food Prices Dataset
 
-### Food Prices Dataset
+### 1. Temporal Features
 
-#### 1. Base Food Columns
+Features related to time periods and temporal indexing.
 
-There are 73 base food columns representing the price for each food item. Base values represent the actual survey data collected at specific market and times.
+- `DATES`: full timestamp of observation (datetime format: `YYYY-MM-DD HH:MM:SS+TZ`)
+- `year`: year of observation (integer: 2007-2025)
+- `month`: month of observation (integer: 1-12)"
+- `start_dense_data`: the earliest date for the entire dataset
+  - all rows are "Jan 2007"
+- `last_survey_point`: the most recent date for the entire dataset
+  - all rows are "Sep 2025"
+
+### 2. Geographic Features
+
+Features identifying location and spatial characteristics.
+
+- `ISO3`: three-letter country code
+  - all rows are "PHL" for Philippines
+- `country`: full country name
+- `adm1_name`: region (e.g. "Cordillera Administrative Region")
+- `adm2_name`: province (e.g. "Abra")
+- `mkt_name`: market - specific location name associated with the datapoint; can be cities, barangays, or municipalities within the province
+- `lat`: latitude coordinate
+- `lon`: longitude coordinate
+- `geo_id`: unique geographic identifier for each market location
+
+Coverage: 1 country, 18 regions, 109 markets across the Philippines
+
+### 3. Metadata & Quality Features
+
+Features providing context about data collection and reliability.
+
+- `currency`: currency used for price values
+  - all rows are "PHP" for Philippine Peso
+- `components`: list of food items tracked at this market with their units and index weights (e.g. "beans (1 KG, Index Weight = 1)")
+  - all rows have the same value: each food item is (1 KG, Index Weight = 1)
+- `data_coverage`: overall percentage of data completeness across all time periods
+  - all rows are "20.71"
+- `data_coverage_recent`: percentage of data completeness for recent periods
+  - all rows are "40.18"
+- `index_confidence_score`: confidence score for the aggregate food price index (0-1 scale)
+- `spatially_interpolated`: boolean flag (0 or 1) indicating whether  spatial interpolation was used
+  - 0: prices that are directly measured or estimated for a specific location
+  - 1: indicates that the price has been calculated using an inverse distance weighted interpolation method, based on data and estimates from nearby market locations
+  - all rows are "0"
+
+### 4. Base Food Features
+
+There are 73 base food features representing the price for each food item. Base values represent the **actual raw survey data** collected at specific market and times.
+
+The base columns are mostly sparse (high percentage of missing values).
 
 ```python
 ['apples', 'bananas', 'beans', 'bread', 'bulgur', 'cabbage', 'carrots', 'cassava', 'cassava_flour', 'cassava_meal', 'cheese', 'chickpeas', 'chili', 'coffee_instant', 'couscous', 'cowpeas', 'cucumbers', 'dates', 'eggplants', 'eggs', 'fish', 'fish_catfish', 'fish_mackerel', 'fish_sardine_canned', 'fish_tilapia', 'fish_tuna_canned', 'fonio', 'garlic', 'groundnuts', 'lentils', 'livestock_sheep_two_year_old_male', 'livestockgoat_castrated_male', 'livestocksheep_castrated_male', 'maize', 'maize_flour', 'maize_meal', 'meat_beef', 'meat_beef_chops', 'meat_beef_minced', 'meat_buffalo', 'meat_chicken', 'meat_chicken_broiler', 'meat_chicken_plucked', 'meat_chicken_whole', 'meat_goat', 'meat_lamb', 'meat_pork', 'milk', 'millet', 'oil', 'onions', 'oranges', 'parsley', 'pasta', 'peas', 'potatoes', 'pulses', 'rice', 'rice_various', 'salt', 'sesame', 'sorghum', 'sorghum_food_aid', 'spinach', 'sugar', 'tea', 'tomatoes', 'tomatoes_paste', 'watermelons', 'wheat', 'wheat_flour', 'yam', 'yogurt']
 ```
 
-#### 2. Derived Food Columns
+### 5. Derived Food Features
 
-For each base food item, there are derived metric columns. Derived values are aggregated/interpolated values from multiple raw observations.
+For each base food item, there are derived metric features. Derived values are **aggregated/interpolated values** from multiple raw observations.
 
-- `o_[food_item]` **monthly opening price estimate**: represents the initial market price at the start of each month
-- `h_[food_item]` **monthly highest price achieved**: captures market peaks, reflecting the maximum demand or valuation during the period
-- `l_[food_item]` **monthly lowest price point**: essential for understanding market dips, buyer interest at lower prices, and the floor value of the commodity
-- `c_[food_item]` **monthly closing price estimate**: reflectis the closing market sentiment and valuation after a month's trading activity
-- `inflation_[food_item]` **12-month inflation rate**: (also called price change rate) calculated by comparing the current price against the price from 12 months prior, giving an annualized percentage change.
-- `trust_[food_item]` **trust score**: ranging from 1-10, reflects the reliability of the inflation calculation for maize; these are specific to each market, time period, and commodity, considering the data availability and accuracy for the preceding 12 months.
+- `o_[food_item]` - monthly opening price estimate: represents the initial market price at the start of each month
+- `h_[food_item]` - monthly highest price achieved: captures market peaks, reflecting the maximum demand or valuation during the period
+- `l_[food_item]` - monthly lowest price point: essential for understanding market dips, buyer interest at lower prices, and the floor value of the commodity
+- `c_[food_item]` - monthly closing price estimate: reflectis the closing market sentiment and valuation after a month's trading activity
+- `inflation_[food_item]` - 12-month inflation rate: (also called price change rate) calculated by comparing the current price against the price from 12 months prior, giving an annualized percentage change.
+- `trust_[food_item]` - trust score: ranging from 1-10, reflects the reliability of the inflation calculation for maize; Higher scores indicate greater confidence and robustness in the inflation figures
 
-There are also indexes for each derived metric. An index is the aggregate value for all food items under the respective metric.
+For each derived metric, there are also indexes. An index is the aggregate value for all food items under the respective metric. It uses a weighted average based on the `components` column.
 
 - `o_food_price_index`
 - `h_food_price_index`
