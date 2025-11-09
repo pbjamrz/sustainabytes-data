@@ -148,10 +148,27 @@ class FoodPricesProcessor:
         cols_to_rmv = self.df_processed.loc[:,m].columns.tolist()   
         self.df_processed.drop(cols_to_rmv, axis=1, inplace=True)
         print(f"✓ Removed {len(cols_to_rmv)} junk columns")
+        print(f"✓ Missing values: {self.df_processed.isnull().sum().sum()} cells")
         
-        print("\nKeeping non-junk columns:")
+        print("\nKeep columns:")
         for col in self.df_processed.columns:
             print(f"  - {col}")
+        
+        return self
+
+    def aggregate_prices(self):
+        """
+        Goup rows by region and year. Then, find mean price of each food item
+        """
+
+        print("\n" + "="*60)
+        print("AGGREGATE DATASET")
+        print("="*60)
+
+        print("\nGroup rows by region and year:")
+        self.df_processed = self.df_processed.groupby(['year', 'adm2_name']).mean()
+        print(self.df_processed)
+        self.df_processed.reset_index()
         
         return self
 
@@ -176,6 +193,7 @@ if __name__ == "__main__":
                 .explore_basic() \
                 .categorize_cols() \
                 .remove_cols() \
+                .aggregate_prices() \
                 .save_csv()
     
     # processed dataframe
