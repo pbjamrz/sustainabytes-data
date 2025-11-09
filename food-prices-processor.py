@@ -85,15 +85,25 @@ class FoodPricesProcessor:
                                    ['o_', 'h_', 'l_', 'c_', 'inflation_', 'trust_'])
                           and col not in self.geo_cols + self.time_cols + self.meta_cols]
         
-        # derived metric columns with prefixes
+        # derived metric index columns
         # o_ = opening price, h_ = high, l_ = low, c_ = closing
+        self.derived_index_cols = {
+            'open': [col for col in cols if col.startswith('o_') and col.endswith('_index')],
+            'high': [col for col in cols if col.startswith('h_') and col.endswith('_index')],
+            'low': [col for col in cols if col.startswith('l_') and col.endswith('_index')],
+            'close': [col for col in cols if col.startswith('c_') and col.endswith('_index')],
+            'inflation': [col for col in cols if col.startswith('inflation_') and col.endswith('_index')],
+            'trust': [col for col in cols if col.startswith('trust_') and col.endswith('_index')]
+        }
+        
+        # derived metric columns with prefixes
         self.derived_cols = {
-            'original': [col for col in cols if col.startswith('o_')],
-            'high': [col for col in cols if col.startswith('h_')],
-            'low': [col for col in cols if col.startswith('l_')],
-            'current': [col for col in cols if col.startswith('c_')],
-            'inflation': [col for col in cols if col.startswith('inflation_')],
-            'trust': [col for col in cols if col.startswith('trust_')]
+            'open': [col for col in cols if col.startswith('o_') and not col.endswith('_index')],
+            'high': [col for col in cols if col.startswith('h_') and not col.endswith('_index')],
+            'low': [col for col in cols if col.startswith('l_') and not col.endswith('_index')],
+            'close': [col for col in cols if col.startswith('c_') and not col.endswith('_index')],
+            'inflation': [col for col in cols if col.startswith('inflation_') and not col.endswith('_index')],
+            'trust': [col for col in cols if col.startswith('trust_') and not col.endswith('_index')]
         }
         
         print(f"{self.food_cols}")
@@ -106,6 +116,7 @@ class FoodPricesProcessor:
         print(f"Temporal: {len(self.time_cols)} columns")
         print(f"Metadata: {len(self.meta_cols)} columns")
         print(f"Base food items: {len(self.food_cols)} columns")
+        print(f"Derived metric index: {len(self.derived_index_cols)} columns")
         print(f"Derived metrics:")
         for key, cols in self.derived_cols.items():
             print(f"  - {key}: {len(cols)} columns")
@@ -122,9 +133,8 @@ class FoodPricesProcessor:
         pass
     
     def save_csv(self):
-        if output_path is None:
-            input_path = Path(self.filepath)
-            output_path = input_path.parent.parent / "processed-data" / f"{input_path.stem}_processed{input_path.suffix}"
+        input_path = Path(self.filepath)
+        output_path = input_path.parent.parent / "processed-data" / f"{input_path.stem}_processed{input_path.suffix}"
         
         self.df.to_csv(output_path, index=False)
         print(f"\nProcessed data saved to: {output_path}")
