@@ -6,7 +6,7 @@ We also have a [dedicated website](https://prebollido.github.io/sustainabytes/).
 
 ## Feature Description: Food Prices Dataset (Raw)
 
-### 1. Temporal Features
+### 1. Temporal
 
 Features related to time periods and temporal indexing.
 
@@ -18,7 +18,7 @@ Features related to time periods and temporal indexing.
 - `last_survey_point`: the most recent date for the entire dataset
   - all rows are "Sep 2025"
 
-### 2. Geographic Features
+### 2. Geographic
 
 Features identifying location and spatial characteristics.
 
@@ -35,7 +35,7 @@ Features identifying location and spatial characteristics.
 
 Coverage: 1 country, 18 regions, 109 markets across the Philippines
 
-### 3. Metadata & Quality Features
+### 3. Metadata & Quality
 
 Features providing context about data collection and reliability.
 
@@ -54,7 +54,7 @@ Features providing context about data collection and reliability.
   - 1: indicates that the price has been calculated using an inverse distance weighted interpolation method, based on data and estimates from nearby market locations
   - all rows are "0"
 
-### 4. Base Food Price Features
+### 4. Base Food Price
 
 There are 73 base food features representing the price for each food item. Base values represent the **actual raw survey data** collected at specific market and times.
 
@@ -64,7 +64,7 @@ The base columns are mostly sparse (high percentage of missing values).
 ['apples', 'bananas', 'beans', 'bread', 'bulgur', 'cabbage', 'carrots', 'cassava', 'cassava_flour', 'cassava_meal', 'cheese', 'chickpeas', 'chili', 'coffee_instant', 'couscous', 'cowpeas', 'cucumbers', 'dates', 'eggplants', 'eggs', 'fish', 'fish_catfish', 'fish_mackerel', 'fish_sardine_canned', 'fish_tilapia', 'fish_tuna_canned', 'fonio', 'garlic', 'groundnuts', 'lentils', 'livestock_sheep_two_year_old_male', 'livestockgoat_castrated_male', 'livestocksheep_castrated_male', 'maize', 'maize_flour', 'maize_meal', 'meat_beef', 'meat_beef_chops', 'meat_beef_minced', 'meat_buffalo', 'meat_chicken', 'meat_chicken_broiler', 'meat_chicken_plucked', 'meat_chicken_whole', 'meat_goat', 'meat_lamb', 'meat_pork', 'milk', 'millet', 'oil', 'onions', 'oranges', 'parsley', 'pasta', 'peas', 'potatoes', 'pulses', 'rice', 'rice_various', 'salt', 'sesame', 'sorghum', 'sorghum_food_aid', 'spinach', 'sugar', 'tea', 'tomatoes', 'tomatoes_paste', 'watermelons', 'wheat', 'wheat_flour', 'yam', 'yogurt']
 ```
 
-### 5. Derived Food Price Features
+### 5. Derived Food Price
 
 For each base food item, there are derived metric features. Derived values are **aggregated/interpolated values** from multiple raw observations.
 
@@ -75,7 +75,7 @@ For each base food item, there are derived metric features. Derived values are *
 - `inflation_[food_item]` - 12-month inflation rate: (also called price change rate) calculated by comparing the current price against the price from 12 months prior, giving an annualized percentage change.
 - `trust_[food_item]` - trust score: ranging from 1-10, reflects the reliability of the inflation calculation for the food item; higher scores indicate greater confidence and robustness in the inflation figures
 
-### 6. Aggregate Food Price Features
+### 6. Derived Food Price Index
 
 For each derived metric, there are also indexes. An index is the aggregate value for all food items under the respective metric. It uses a weighted average based on the `components` column.
 

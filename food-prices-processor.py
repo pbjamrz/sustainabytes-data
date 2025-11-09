@@ -10,16 +10,17 @@ class FoodPricesProcessor:
     def __init__(self, filepath):
         self.filepath = filepath
         self.df = None
+        self.df_processed = None
         
     def load_csv(self):
         self.df = pd.read_csv(self.filepath)
         self.nrows = self.df.shape[0]
         self.ncols = self.df.shape[1]
         
-        print(f"Dataset loaded: {self.nrows} rows, {self.ncols} columns")
+        print(f"✓ Dataset loaded: {self.nrows} rows, {self.ncols} columns")
         return self
     
-    def explore_basic_info(self):
+    def explore_basic(self):
         """
         Display basic information about the dataset:
         - Geographic coverage
@@ -40,14 +41,14 @@ class FoodPricesProcessor:
         
         # date range
         print(f"\nTemporal Coverage:")
-        print(f"  - Years: {sorted(self.df['year'].unique())}")
+        print(f"  - Years: {sorted(self.df['year'].unique().tolist())}")
         print(f"  - Date range: {self.df['DATES'].min()} to {self.df['DATES'].max()}")
         
         # junk columns — food columns w/ a lot of missing values
         print(f"\nJunk Columns:")
-        self.missing_entries = self.df.isnull() # returns dataframe of same shape where each cell is True if original cell is empty
+        missing_entries = self.df.isnull() # returns dataframe of same shape where each cell is True if original cell is empty
         
-        nmissing_entries = self.missing_entries.sum() / self.nrows * 100
+        nmissing_entries = missing_entries.sum() / self.nrows * 100
         nmissing_entries = nmissing_entries.sort_values(ascending=False)
         
         print(f"  - Columns with >50% missing: {(nmissing_entries > 50).sum()}")
@@ -55,7 +56,7 @@ class FoodPricesProcessor:
         
         return self
     
-    def identify_column_groups(self):
+    def categorize_cols(self):
         """
         Categorize columns into groups for easier processing:
         - Geographic identifiers
@@ -79,24 +80,14 @@ class FoodPricesProcessor:
                           'data_coverage_recent', 'index_confidence_score', 
                           'spatially_interpolated']
         
-        # base food item price columns (no prefix)
+        # base food item price columns (w/o prefixes)
         self.food_cols = [col for col in cols 
                           if not any(col.startswith(prefix) for prefix in 
                                    ['o_', 'h_', 'l_', 'c_', 'inflation_', 'trust_'])
                           and col not in self.geo_cols + self.time_cols + self.meta_cols]
         
-        # derived metric index columns
+        # derived metric columns (w/ prefixes)
         # o_ = opening price, h_ = high, l_ = low, c_ = closing
-        self.derived_index_cols = {
-            'open': [col for col in cols if col.startswith('o_') and col.endswith('_index')],
-            'high': [col for col in cols if col.startswith('h_') and col.endswith('_index')],
-            'low': [col for col in cols if col.startswith('l_') and col.endswith('_index')],
-            'close': [col for col in cols if col.startswith('c_') and col.endswith('_index')],
-            'inflation': [col for col in cols if col.startswith('inflation_') and col.endswith('_index')],
-            'trust': [col for col in cols if col.startswith('trust_') and col.endswith('_index')]
-        }
-        
-        # derived metric columns with prefixes
         self.derived_cols = {
             'open': [col for col in cols if col.startswith('o_') and not col.endswith('_index')],
             'high': [col for col in cols if col.startswith('h_') and not col.endswith('_index')],
@@ -106,8 +97,11 @@ class FoodPricesProcessor:
             'trust': [col for col in cols if col.startswith('trust_') and not col.endswith('_index')]
         }
         
-        print(f"{self.food_cols}")
-        print(f"{self.derived_cols}")
+        # derived metric index columns 
+        self.derived_index_cols = [col for col in cols 
+                                   if any(col.startswith(prefix) for prefix in 
+                                          ['o_', 'h_', 'l_', 'c_', 'inflation_', 'trust_']) 
+                                   and col.endswith('_index')]
         
         print("\n" + "="*60)
         print("COLUMN GROUPS")
@@ -123,21 +117,54 @@ class FoodPricesProcessor:
         
         return self
     
-    def handle_missing_values(self):
-        pass
+    def remove_cols(self):
+        """
+        Simplify dataset by keeping only the relevant columns:
+        - year
+        - region (adm2_name)
+        - closing food prices
+        Then remove columns with >50% missing entries
+        """
+        print("\n" + "="*60)
+        print("SIMPLIFY DATASET")
+        print("="*60)
+        
+        # keep relevant columns
+        print("\nKeep relevant columns:")
+        cols_to_keep = ['year', 'adm2_name'] + self.derived_cols['close']
+        self.df_processed = self.df[cols_to_keep].copy()
+        print(f"✓ Removed {self.ncols - len(cols_to_keep)} unnecessary columns")
+        
+        # remove junk columns
+        print("\nRemove junk columns:")
+        missing_entries = self.df_processed.isnull() # returns dataframe of same shape where each cell is True if original cell is empty
+        nmissing_entries = missing_entries.sum() / self.df_processed.shape[0] * 100 # returns series (list) where index -> column, value -> percentage
+    
+        print(f"  - Columns with >50% missing: {(nmissing_entries > 50).sum()}")
+        print(f"  - Columns with >90% missing: {(nmissing_entries > 90).sum()}")
+        print(f"  - Columns with 100% missing: {(nmissing_entries == 100).sum()}")
+        
+        m = nmissing_entries.gt(90.0)
+        cols_to_rmv = self.df_processed.loc[:,m].columns.tolist()   
+        self.df_processed.drop(cols_to_rmv, axis=1, inplace=True)
+        print(f"✓ Removed {len(cols_to_rmv)} junk columns")
+        
+        print("\nKeeping non-junk columns:")
+        for col in self.df_processed.columns:
+            print(f"  - {col}")
+        
+        return self
 
     def convert_data_types(self):
-        pass
-    
-    def detect_outliers(self, columns=None, method='iqr', threshold=3):
         pass
     
     def save_csv(self):
         input_path = Path(self.filepath)
         output_path = input_path.parent.parent / "processed-data" / f"{input_path.stem}_processed{input_path.suffix}"
         
-        self.df.to_csv(output_path, index=False)
-        print(f"\nProcessed data saved to: {output_path}")
+        self.df_processed.to_csv(output_path, index=False)
+        print(f"\n✓ Data processed: {self.df_processed.shape[0]} rows, {self.df_processed.shape[1]} columns") 
+        print(f"✓ Data saved to: {output_path}")
         
         return self
 
@@ -146,9 +173,10 @@ if __name__ == "__main__":
     
     # run preprocessing pipeline
     preprocessor.load_csv() \
-                .explore_basic_info() \
-                .identify_column_groups() \
+                .explore_basic() \
+                .categorize_cols() \
+                .remove_cols() \
                 .save_csv()
     
     # processed dataframe
-    df_processed = preprocessor.df
+    df_processed = preprocessor.df_processed
