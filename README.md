@@ -1,8 +1,9 @@
 # Sustainabytes Data Analysis
 
-This repository contains the code and documentation used in the data analysis of our CS132 Project: Sustainabytes.
+This repository contains the code and documentation used in the data analysis of our
+**CS132 Project: Sustainabytes**.
 
-We also have a [dedicated website](https://prebollido.github.io/sustainabytes/).
+More information can be found at our [dedicated website](https://prebollido.github.io/sustainabytes/).
 
 ## Feature Description: Food Prices Dataset (Raw)
 
