@@ -1,4 +1,4 @@
-Region,Province,Annual Per Capita Poverty Threshold (2018), Annual Per Capita Poverty Threshold (2021),Annual Per Capita Poverty Threshold (2023),Poverty Incidence Among Families (%) (2018), Poverty Incidence Among Families (%) (2021),Poverty Incidence Among Families (%) (2023),Magnitude of Poor Families (2018),Magnitude of Poor Families (2021),Magnitude of Poor Families (2023)
+Region,Province,Annual Per Capita Poverty Threshold (2018),Annual Per Capita Poverty Threshold (2021),Annual Per Capita Poverty Threshold (2023),Poverty Incidence Among Families (%) (2018),Poverty Incidence Among Families (%) (2021),Poverty Incidence Among Families (%) (2023),Magnitude of Poor Families (1000) (2018),Magnitude of Poor Families (1000) (2021),Magnitude of Poor Families (1000) (2023)
 NCR,1st District,"28,682","32,978","37,711",2,1,1.6,9.01,5.29,8.13
 NCR,2nd District,"28,682","32,978","37,711",1,2,0.9,16.47,19.79,11.24
 NCR,3rd District,"28,682","32,978","37,711",2,3,1.6,15.11,23.36,11.83

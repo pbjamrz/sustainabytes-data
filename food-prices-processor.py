@@ -20,7 +20,7 @@ class FoodPricesProcessor:
         print(f"✓ Dataset loaded: {self.nrows} rows, {self.ncols} columns")
         return self
     
-    def explore_basic(self):
+    def explore(self):
         """
         Display basic information about the dataset:
         - Geographic coverage
@@ -117,7 +117,7 @@ class FoodPricesProcessor:
         
         return self
     
-    def simplify_dataset(self):
+    def simplify(self):
         """
         Simplify dataset by keeping only the relevant columns:
         - year
@@ -154,6 +154,11 @@ class FoodPricesProcessor:
         for col in self.df_processed.columns:
             print(f"  - {col}")
         
+        print("\nRemove rows outside of 2015-2025:")
+        series_to_rmv =  ~(2015 <= self.df_processed['year']) & (self.df_processed['year'] <= 2025)
+        self.df_processed.drop(self.df_processed[series_to_rmv].index, inplace = True)
+        print(f"✓ Removed {len(series_to_rmv)}")
+        
         return self
 
     def aggregate_prices(self):
@@ -172,7 +177,7 @@ class FoodPricesProcessor:
         
         return self
 
-    def convert_data_types(self):
+    def clean(self):
         pass
     
     def save_csv(self):
@@ -192,7 +197,7 @@ if __name__ == "__main__":
     preprocessor.load_csv() \
                 .explore() \
                 .categorize_cols() \
-                .reshape() \
+                .simplify() \
                 .aggregate_prices() \
                 .save_csv()
     

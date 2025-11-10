@@ -29,7 +29,7 @@ class PovertyIncidenceProcessor:
         print("RESHAPING DATA")
         print("="*60)
         
-        # identify columns that contain year information
+        # identify year columns (columns w/ year suffix)
         year_columns = [col for col in self.df.columns if 
                         '(2018)' in col or 
                         '(2021)' in col or 
@@ -40,14 +40,15 @@ class PovertyIncidenceProcessor:
         print(f"\nColumns with year data: {len(year_columns)}")
         print(f"ID columns: {id_columns}")
         
-        # extract year suffix from columns and add new year "column"
+        # extract year suffix from columns and add new "year" column
         reshaped_data = []
         for year in [2018, 2021, 2023]:
             year_cols = [col for col in year_columns if f'({year})' in col]
             
             subset = self.df[id_columns + year_cols].copy()
             subset['year'] = year
-            print(year, subset)
+            print(f"{year}" + '-'*30)
+            print(subset)
             
             # rename columns to remove year suffix
             rename_dict = {}
@@ -66,7 +67,7 @@ class PovertyIncidenceProcessor:
         
         return self
     
-    def explore_data(self):
+    def explore(self):
         """Display summary statistics and data overview."""
         print("\n" + "="*60)
         print("DATA OVERVIEW")
@@ -77,15 +78,39 @@ class PovertyIncidenceProcessor:
         print(f"Regions: {self.df_processed['Region'].nunique()}")
         print(f"Provinces: {self.df_processed['Province'].nunique()}")
         
-        # Show sample data
-        print("\nSample data:")
-        print(self.df_processed.head(10).to_string(index=False))
-        
-        # Summary statistics
+        # summary statistics
         print("\n" + "-"*60)
         print("SUMMARY STATISTICS")
         print("-"*60)
         print(self.df_processed.describe())
+        
+        return self
+    
+    def clean(self):
+        """
+        Clean data:
+        - remove commas
+        - convert data types
+        - handle missing values
+        """
+        print("\n" + "="*60)
+        print("CLEANING DATA")
+        print("="*60)
+        
+        numeric_cols = [col for col in self.df_processed.columns
+                        if col not in ['Region', 'Province'] 
+                        ]
+        
+        # for each value, remove comma and convert to numeric data type
+        for col in numeric_cols:
+            self.df_processed[col] = self.df_processed[col].astype(str).str.replace(',', '')
+            self.df_processed[col] = pd.to_numeric(self.df_processed[col], errors='coerce')
+            
+        print("✓ Removed commas from numeric values")
+        print("✓ Converted to appropriate data types")
+        
+        # convert year to inte
+        self.df_processed['year'] = self.df_processed['year'].astype(int)
         
         return self
     
@@ -105,9 +130,10 @@ if __name__ == "__main__":
     
     # Run processing pipeline
     processor.load_csv() \
-             .reshape()
-            #  .explore() \
-            #  .save_csv()
+             .reshape() \
+             .clean() \
+             .explore() \
+             .save_csv()
     
     # Access processed dataframe
     df_processed = processor.df_processed
