@@ -168,7 +168,7 @@ class FoodPricesProcessor:
         print("\nGroup rows by region and year:")
         self.df_processed = self.df_processed.groupby(['year', 'adm2_name']).mean()
         print(self.df_processed)
-        self.df_processed.reset_index()
+        self.df_processed.reset_index(inplace=True)
         
         return self
 
