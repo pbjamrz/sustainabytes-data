@@ -46,9 +46,7 @@ class PovertyIncidenceProcessor:
             year_cols = [col for col in year_columns if f'({year})' in col]
             
             subset = self.df[id_columns + year_cols].copy()
-            subset['year'] = year
-            print(f"{year}" + '-'*30)
-            print(subset)
+            subset['Year'] = year
             
             # rename columns to remove year suffix
             rename_dict = {}
@@ -60,29 +58,14 @@ class PovertyIncidenceProcessor:
             reshaped_data.append(subset)
         
         self.df_processed = pd.concat(reshaped_data, ignore_index=True)
+        self.df_processed = self.df_processed[['Region', 'Province', 'Year',	
+                                              'Annual Per Capita Poverty Threshold',
+                                              'Poverty Incidence Among Families (%)',
+                                              'Magnitude of Poor Families (1000)']]
         
         print(f"\n✓ Data reshaped from {self.nrows} rows to {len(self.df_processed)} rows")
         print(f"✓ Columns reduced from {self.ncols} to {len(self.df_processed.columns)}")
         print(f"\nNew columns: {self.df_processed.columns.tolist()}")
-        
-        return self
-    
-    def explore(self):
-        """Display summary statistics and data overview."""
-        print("\n" + "="*60)
-        print("DATA OVERVIEW")
-        print("="*60)
-        
-        print(f"\nShape: {self.df_processed.shape}")
-        print(f"Years: {sorted(self.df_processed['year'].unique().tolist())}")
-        print(f"Regions: {self.df_processed['Region'].nunique()}")
-        print(f"Provinces: {self.df_processed['Province'].nunique()}")
-        
-        # summary statistics
-        print("\n" + "-"*60)
-        print("SUMMARY STATISTICS")
-        print("-"*60)
-        print(self.df_processed.describe())
         
         return self
     
@@ -109,8 +92,87 @@ class PovertyIncidenceProcessor:
         print("✓ Removed commas from numeric values")
         print("✓ Converted to appropriate data types")
         
-        # convert year to inte
-        self.df_processed['year'] = self.df_processed['year'].astype(int)
+        # convert year to int
+        self.df_processed['Year'] = self.df_processed['Year'].astype(int)
+        
+        return self
+    
+    def explore(self):
+        """Display summary statistics and data overview."""
+        print("\n" + "="*60)
+        print("DATA OVERVIEW")
+        print("="*60)
+        
+        print(f"\nShape: {self.df_processed.shape}")
+        print(f"Years: {sorted(self.df_processed['Year'].unique().tolist())}")
+        print(f"Regions: {self.df_processed['Region'].nunique()}")
+        print(f"Provinces: {self.df_processed['Province'].nunique()}")
+        
+        # summary statistics
+        print("\n" + "-"*60)
+        print("SUMMARY STATISTICS")
+        print("-"*60)
+        print(self.df_processed.describe())
+        
+        # Check for missing values
+        print(f"\nMissing values:")
+        missing = self.df_processed.isnull().sum()
+        missing = missing[missing > 0]
+        for col, count in missing.items():
+            pct = (count / len(self.df_processed)) * 100
+            print(f"  - {col}: {count} ({pct:.1f}%)")
+        
+        return self
+    
+    def interpolate(self):
+        """Interpolate data for missing years (2018-2023) and extrapolate for 2015-2017, 2024-2025."""
+        print("\n" + "="*60)
+        print("DATA INTERPOLATION & EXTRAPOLATION")
+        print("="*60)
+        
+        # create complete year range for each province (2015-2025)
+        provinces = self.df_processed[['Region', 'Province']].drop_duplicates()
+        years = range(2015, 2026)  # 2015-2025
+    
+        complete_index = []
+        for _, row in provinces.iterrows():
+            for year in years:
+                complete_index.append({
+                    'Region': row['Region'],
+                    'Province': row['Province'],
+                    'Year': year
+                })
+        
+        complete_df = pd.DataFrame(complete_index)
+        
+        # merge with existing data
+        self.df_processed = complete_df.merge(
+            self.df_processed,
+            on=['Region', 'Province', 'Year'],
+            how='left'
+        )
+        
+        # interpolate & extrapolate numeric columns for each province
+        self.df_processed = self.df_processed.sort_values(['Province', 'Year']).reset_index(drop=True)
+        
+        numeric_cols = ['Annual Per Capita Poverty Threshold',
+                       'Poverty Incidence Among Families (%)',
+                       'Magnitude of Poor Families (1000)']
+        
+        for col in numeric_cols:
+            # first interpolate between known points (2018-2023)
+            self.df_processed[col] = self.df_processed.groupby('Province')[col].transform(
+                lambda x: x.interpolate(method='linear', limit_direction='both')
+            )
+            
+            # then extrapolate linearly for 2015-2017 and 2024-2025
+            self.df_processed[col] = self.df_processed.groupby('Province')[col].transform(
+                lambda x: x.interpolate(method='linear', limit_direction='both', fill_value='extrapolate')
+            )
+        
+        print(f"✓ Interpolated data for years 2018-2023")
+        print(f"✓ Extrapolated data for years 2015-2017 and 2024-2025")
+        print(f"✓ New shape: {self.df_processed.shape}")
         
         return self
     
@@ -133,6 +195,7 @@ if __name__ == "__main__":
              .reshape() \
              .clean() \
              .explore() \
+             .interpolate() \
              .save_csv()
     
     # Access processed dataframe
