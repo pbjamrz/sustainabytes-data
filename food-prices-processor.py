@@ -4,7 +4,7 @@ from pathlib import Path
 
 class FoodPricesProcessor:
     """
-    A class to handle prea-analysis and pre-processing of the food price dataset.
+    A class to handle pre-analysis and pre-processing of the food price dataset.
     """
     
     def __init__(self, filepath):
@@ -117,7 +117,7 @@ class FoodPricesProcessor:
         
         return self
     
-    def remove_cols(self):
+    def simplify_dataset(self):
         """
         Simplify dataset by keeping only the relevant columns:
         - year
@@ -190,9 +190,9 @@ if __name__ == "__main__":
     
     # run preprocessing pipeline
     preprocessor.load_csv() \
-                .explore_basic() \
+                .explore() \
                 .categorize_cols() \
-                .remove_cols() \
+                .reshape() \
                 .aggregate_prices() \
                 .save_csv()
     

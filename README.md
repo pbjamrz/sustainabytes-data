@@ -5,7 +5,7 @@ This repository contains the code and documentation used in the data analysis of
 
 More information can be found at our [dedicated website](https://prebollido.github.io/sustainabytes/).
 
-## Feature Description: Food Prices Dataset (Raw)
+## Feature Description: Food Prices Dataset - Raw
 
 ### 1. Temporal
 
